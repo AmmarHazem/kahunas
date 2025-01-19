@@ -1,0 +1,95 @@
+version: '3.8'
+
+services:
+  kahunas-db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: mysecureroot123
+      MYSQL_DATABASE: kahunas
+      MYSQL_USER: kahunas_user
+      MYSQL_PASSWORD: mysecurepass123
+    ports:
+      - "3306:3306"
+    volumes:
+      - kahunas_mysql_data:/var/lib/mysql
+    networks:
+      - app-network
+
+  ai-bot-db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: mysecureroot123
+      MYSQL_DATABASE: ai_bot
+      MYSQL_USER: kahunas_user
+      MYSQL_PASSWORD: mysecurepass123
+    ports:
+      - "3307:3306"
+    volumes:
+      - ai_bot_mysql_data:/var/lib/mysql
+    networks:
+      - app-network
+
+  kahunas-api:
+    build:
+      context: ./kahunas-api
+      dockerfile: Dockerfile
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=production
+      - JWT_SECRET=${JWT_SECRET}
+      - DB_HOST=kahunas-db
+      - DB_PORT=3306
+      - DB_USERNAME=${MYSQL_USER}
+      - DB_PASSWORD=${MYSQL_PASSWORD}
+      - DB_DATABASE=kahunas
+    networks:
+      - app-network
+    depends_on:
+      - kahunas-db
+
+  ai-bot:
+    build:
+      context: ./ai-bot
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - JWT_SECRET=${JWT_SECRET}
+      - DB_HOST=ai-bot-db
+      - DB_PORT=3306
+      - DB_USERNAME=${MYSQL_USER}
+      - DB_PASSWORD=${MYSQL_PASSWORD}
+      - DB_DATABASE=ai_bot
+    networks:
+      - app-network
+    depends_on:
+      - ai-bot-db
+      - kahunas-api
+
+  admin-dashboard:
+    build:
+      context: ./kahunas-admin-dashboard
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://localhost:3002
+      - NEXT_PUBLIC_AI_BOT_URL=http://localhost:3000
+    networks:
+      - app-network
+    depends_on:
+      - kahunas-api
+      - ai-bot
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  kahunas_mysql_data:
+  ai_bot_mysql_data: 
