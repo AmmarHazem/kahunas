@@ -10,6 +10,26 @@ The platform consists of three main services:
 - **Admin Dashboard** (Port 3001): Next.js application for platform management
 - **Coaching API** (Port 3002): NestJS-based API handling core business logic
 
+## Database Architecture
+
+We chose MySQL 8.0 as our database solution for several key reasons:
+
+### Data Consistency and Integrity
+### Advanced indexing for optimized query performance
+### Strong ACID compliance ensuring data reliability
+### Transaction support for complex operations
+
+### Microservices Data Management
+We maintain two separate databases:
+1. **Kahunas DB**: Handles core business logic, user management, and coaching sessions
+2. **AI Bot DB**: Manages conversation history and response analytics
+
+This separation allows for:
+- Independent scaling of databases
+- Isolated data concerns
+- Optimized performance for different data access patterns
+- Enhanced security through data segregation
+
 ## Services Overview
 
 ### AI Fitness Bot
